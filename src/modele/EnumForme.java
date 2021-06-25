@@ -4,5 +4,6 @@ public enum EnumForme {
     DROITE,
     RECTANGLE,
     CERCLE,
-    TRIANGLE;
+    TRIANGLE,
+    CAMION;
 }

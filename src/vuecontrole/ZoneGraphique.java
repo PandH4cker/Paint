@@ -1,8 +1,8 @@
 package vuecontrole;
 
-import modele.Droite;
-import modele.Forme;
+import modele.*;
 import modele.Point;
+import modele.Rectangle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +18,7 @@ public class ZoneGraphique extends JPanel implements MouseListener, MouseMotionL
     private Point pInit, pFin;
     private boolean isPainting;
     private List<Forme> formes;
+    private boolean isErasing;
 
     public ZoneGraphique(final BarreBasse barreBasse,
                          final BarreHaute barreHaute) {
@@ -31,6 +32,8 @@ public class ZoneGraphique extends JPanel implements MouseListener, MouseMotionL
 
         this.isPainting = false;
         this.formes = new LinkedList<>();
+
+        this.isErasing = false;
         this.setVisible(true);
     }
 
@@ -42,25 +45,48 @@ public class ZoneGraphique extends JPanel implements MouseListener, MouseMotionL
     }
 
     private void dessin() {
-        Forme f = null;
-        Color color = this.barreHaute.getCouleurSelectionnee().getColor();
-        switch (this.barreHaute.getFormeSelectionnee()) {
-            case DROITE -> f = new Droite(color, this.pInit, this.pFin);
-            case CERCLE -> {
-
+        if (isErasing) gommer();
+        else {
+            Forme f;
+            Color color = this.barreHaute.getCouleurSelectionnee().getColor();
+            switch (this.barreHaute.getFormeSelectionnee()) {
+                case DROITE -> f = new Droite(color, this.pInit, this.pFin);
+                case CERCLE -> f = new Cercle(color, this.pInit, this.pFin);
+                case TRIANGLE -> f = new Triangle(color, this.pInit, this.pFin);
+                case RECTANGLE -> f = new Rectangle(color, this.pInit, this.pFin);
+                case CAMION -> f = new Camion(color, this.pInit, this.pFin);
+                default -> f = new Droite(color, this.pInit, this.pFin);
             }
-            case TRIANGLE -> {
-
-            }
-            case RECTANGLE -> {
-
-            }
-            default -> f = new Droite(color, this.pInit, this.pFin);
+            f.seDessiner(this.getGraphics());
+            if (isPainting && this.formes.size() > 0)
+                this.formes.remove(this.formes.size() - 1);
+            this.formes.add(f);
+            this.repaint();
         }
+    }
+
+    public void activerGomme() {
+        this.isErasing = true;
+    }
+
+    public void desactiverGomme() {
+        this.isErasing = false;
+    }
+
+    private void gommer() {
+        Forme f = new Gomme(this.getBackground(), this.pFin, 10);
         f.seDessiner(this.getGraphics());
-        if (isPainting && this.formes.size() > 0)
-            this.formes.remove(this.formes.size() - 1);
         this.formes.add(f);
+    }
+
+    public void effacer() {
+        this.formes = new LinkedList<>();
+        this.repaint();
+    }
+
+    public void defaire() {
+        if (formes.size() == 0) return;
+        this.formes.remove(this.formes.size() - 1);
         this.repaint();
     }
 
